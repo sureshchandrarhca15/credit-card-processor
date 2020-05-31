@@ -49,6 +49,20 @@ properties([
         throw e
       }
     }
+	
+	stage('Sonar Analysis') {
+      try {
+           withSonarQubeEnv('sonarqube_7_5') {
+           sh """ 
+		   mvn -DBranch=${gitBranch} -Dsonar.branch=${gitBranch} -e -B sonar:sonar
+		   sh """
+        }
+      }
+      catch (Exception e) {
+        println "Failed to Sonar - ${currentBuild.fullDisplayName}"
+        throw e
+      }
+    }
 }
 
      
