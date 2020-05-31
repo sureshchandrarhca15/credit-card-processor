@@ -83,7 +83,7 @@ properties([
     }
   }
 	else {
-	echo "You have selected ${SELECT_ENV}"
+	echo "You have selected ${SELECT_ENV} Environment"
 }
 }
 
