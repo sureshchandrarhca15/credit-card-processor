@@ -5,6 +5,7 @@ properties([
 	])
 	
   node {
+	 if (env.SELECT_ENV == "Dev") { 
      def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
      stage('Checkout') 
      {
@@ -80,7 +81,10 @@ properties([
         throw e
       }
     }
+  }
+	else {
+	echo "You have selected ${SELECT_ENV}"
 }
-
+}
 
      
