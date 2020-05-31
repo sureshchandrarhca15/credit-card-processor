@@ -63,6 +63,24 @@ properties([
         throw e
       }
     }
+	
+	stage('Quality Gate') {
+      try {
+          withSonarQubeEnv('sonarqube_7_5') {
+          timeout(time: 1, unit: 'HOURS') {
+              def qg = waitForQualityGate()
+              if (qg.status != 'OK' && qg.status != 'WARN') {
+                error "Pipeline aborted due to quality gate failure: ${qg.status}"
+              }
+             }
+          }
+      }
+      catch (Exception e) {
+        println "Failed to Sonar QG - ${currentBuild.fullDisplayName}"
+        throw e
+      }
+    }
 }
+
 
      
