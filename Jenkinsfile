@@ -34,6 +34,21 @@ properties([
         throw e
       }
     }
+	
+	stage('Unit Test') {
+      try {
+	  		withMaven(maven: 'maven_3_6_3') {
+			sh """
+			mvn test -Dmaven.test.skip=false
+			"""
+			}
+        }
+        
+      catch (Exception e) {
+        println "Failed to test - ${currentBuild.fullDisplayName}"
+        throw e
+      }
+    }
 }
 
      
