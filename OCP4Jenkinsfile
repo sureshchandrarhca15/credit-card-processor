@@ -12,12 +12,8 @@ pipeline
       {
         steps
         {
-			checkout([$class: 'GitSCM', branches: [[name: '*/master']], [[url: 'https://github.com/sureshchandrarhca15/credit-card-processor.git']]])
-            script 
-			{
-             echo "Checkout Done"    
-            }
-             sh "mvn install -DskipTests=true"
+checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/sureshchandrarhca15/credit-card-processor.git']]])            
+		             sh "mvn install -DskipTests=true"
             }
       }
 	}
