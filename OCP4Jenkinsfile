@@ -7,6 +7,8 @@ pipeline {
 	{
 	steps
 	{
+	script
+	{
 	try
 	{
 		myRepo = checkout scm
@@ -22,9 +24,12 @@ pipeline {
 	}
 	}
 	}
+	}
 	stage('Build')
 	{
 	steps
+	{
+	script
 	{
 	try
 	{
@@ -38,10 +43,13 @@ pipeline {
 	}
 	}
 	}
+	}
 	stage('Unit Test')
 	{
 	steps
 	{
+	script
+	{	
 	try
 	{
 		sh """
@@ -55,10 +63,13 @@ pipeline {
 	}
 	}
 	}
+	}
 	stage('Sonar Analysis')
 	{
 	steps
 	{
+	script
+	{	
 	try
 	{
 		withSonarQubeEnv('sonarqube_7_5') {
@@ -74,10 +85,13 @@ pipeline {
 	}
 	}
 	}
+	}
 	stage('Quality Gate')
 	{
 	steps
 	{
+	script
+	{	
 	try
 	{
 		withSonarQubeEnv('sonarqube_7_5') {
@@ -96,11 +110,14 @@ pipeline {
 	}
 	}
 	}
+	}
 	stage('Build Docker Image') 
 	{
 	agent { label 'maven' }
 	steps
 	{
+	script
+	{	
 	try 
 	{
 		withCredentials([[$class: 'UsernamePasswordMultiBinding',
@@ -121,7 +138,7 @@ pipeline {
 	}
 	}
 	}
-	
+	}
 
 }
 }
