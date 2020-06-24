@@ -1,8 +1,4 @@
-node {
-  agent 
-  {
-    label 'maven'
-  }
+node('maven') {
      def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
      stage('Checkout') 
      {
