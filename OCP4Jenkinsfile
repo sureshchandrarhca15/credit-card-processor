@@ -37,7 +37,7 @@ node('maven') {
   	    {
         
             sh """
-              mvn test -Dmaven.test.skip=false
+              mvn test -Dmaven.test.skip=true
             """
         
         }
