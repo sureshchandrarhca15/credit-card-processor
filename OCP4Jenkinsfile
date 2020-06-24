@@ -5,7 +5,8 @@ pipeline {
   {
 	stage('Checkout') 
 	{
-	
+	steps
+	{
 	try
 	{
 		myRepo = checkout scm
@@ -20,7 +21,10 @@ pipeline {
 		throw e
 	}
 	}
+	}
 	stage('Build')
+	{
+	steps
 	{
 	try
 	{
@@ -33,7 +37,10 @@ pipeline {
 		throw e
 	}
 	}
+	}
 	stage('Unit Test')
+	{
+	steps
 	{
 	try
 	{
@@ -47,7 +54,10 @@ pipeline {
 		throw e
 	}
 	}
+	}
 	stage('Sonar Analysis')
+	{
+	steps
 	{
 	try
 	{
@@ -63,7 +73,10 @@ pipeline {
 		throw e
 	}
 	}
+	}
 	stage('Quality Gate')
+	{
+	steps
 	{
 	try
 	{
@@ -82,9 +95,12 @@ pipeline {
 		throw e
 	}
 	}
+	}
 	stage('Build Docker Image') 
 	{
 	agent { label 'maven' }
+	steps
+	{
 	try 
 	{
 		withCredentials([[$class: 'UsernamePasswordMultiBinding',
@@ -104,8 +120,9 @@ pipeline {
 		throw e
 	}
 	}
+	}
 	
-	
+
 }
 }
 			
