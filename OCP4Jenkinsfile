@@ -126,8 +126,8 @@ pipeline {
 		passwordVariable: 'QUAY_PASSWORD']]) 
 		{
 		sh """
-        docker build -t sureshchandrarhca15/mytomcat:${gitCommit} --build-arg VERSION="0.0.5-${BUILD_NUMBER}" .
-        docker images
+        sudo docker build -t sureshchandrarhca15/mytomcat:${gitCommit} --build-arg VERSION="0.0.5-${BUILD_NUMBER}" .
+        sudo docker images
 		"""
 		}
 	}
