@@ -1,0 +1,29 @@
+def label = "worker-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true),
+],
+
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+])
+
+{
+  node(label) {
+    def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+    stage('Checkout')
+    {
+      try {
+        myRepo = checkout scm
+        gitCommit = myRepo.GIT_COMMIT
+        gitBranch = myRepo.GIT_BRANCH
+        shortGitCommit = "${gitCommit[0..10]}"
+        previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+        }
+      catch(Exception e) {
+        println "ERROR => Code Checkout failed, exiting..."
+        throw e
+        }
+     }
+  }
+}
