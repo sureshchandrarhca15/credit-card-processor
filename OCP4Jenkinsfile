@@ -1,10 +1,18 @@
+def label = "worker-${UUID.randomUUID().toString()}"
+
 properties([
   parameters([
     choice(choices: ['Dev', 'Stage', 'Prod'], description: 'Please select target Environment ', name: 'SELECT_ENV')
 			])
 	])
-	
-  node('maven') {
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'maven'),
+  containerTemplate(name: 'docker'),
+],
+
+{	
+  node('label') {
 	 if (env.SELECT_ENV == "Dev") { 
      def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
      stage('Checkout') 
@@ -25,9 +33,12 @@ properties([
 	 stage('Build') {
       try
   	    {
+	      container('maven')
+		  {
 			sh """
 			mvn clean install -Dmaven.test.skip=true
 			"""
+		  }
         }
       catch (Exception e) {
         println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
@@ -38,9 +49,12 @@ properties([
 	stage('Unit Test') {
       try 
 	    {
+	      container('maven')
+		  {		
 	  		sh """
 			mvn test -Dmaven.test.skip=true
 			"""
+		  }
         }
         
       catch (Exception e) {
@@ -51,10 +65,13 @@ properties([
 	
 	stage('Sonar Analysis') {
       try {
+	      container('maven')
+		  {	  
            withSonarQubeEnv('sonarqube_7_5') {
            sh """ 
 		   mvn -DBranch=${gitBranch} -Dsonar.branch=${gitBranch} -e -B sonar:sonar
 		   sh """
+		  }
         }
       }
       catch (Exception e) {
@@ -65,6 +82,8 @@ properties([
 	
 	stage('Quality Gate') {
       try {
+	      container('maven')
+		  {	  
           withSonarQubeEnv('sonarqube_7_5') {
           timeout(time: 1, unit: 'HOURS') {
               def qg = waitForQualityGate()
@@ -73,6 +92,7 @@ properties([
               }
              }
           }
+		  }
       }
       catch (Exception e) {
         println "Failed to Sonar QG - ${currentBuild.fullDisplayName}"
@@ -80,10 +100,10 @@ properties([
       }
     }
   }
-  node('docker')
-  {
-  stage('Build Docker Image') {
+   stage('Build Docker Image') {
       try {
+	      container('docker')
+		  {	  
           withCredentials([[$class: 'UsernamePasswordMultiBinding',
           credentialsId: 'quay-creds',
           usernameVariable: 'QUAY_USER',
@@ -92,7 +112,8 @@ properties([
             docker build -t sureshchandrarhca15/mytomcat:${gitCommit} --build-arg VERSION="0.0.5-${BUILD_NUMBER}" .
             docker images
 	      """
-	}
+	      }
+		 }
       }
       catch (Exception e) {
         println "Failed to Build Docker Image - ${currentBuild.fullDisplayName}"
