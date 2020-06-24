@@ -12,7 +12,7 @@ pipeline
       {
         steps
         {
-            git branch: 'master', url: 'https://github.com/sureshchandrarhca15/credit-card-processor.git'
+			checkout([$class: 'GitSCM', branches: [[name: '*/master']], [[url: 'https://github.com/sureshchandrarhca15/credit-card-processor.git']]])
             script 
 			{
              echo "Checkout Done"    
