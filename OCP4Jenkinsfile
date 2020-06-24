@@ -4,115 +4,60 @@ properties([
 			])
 	])
 
-  node {
-	 if (env.SELECT_ENV == "Dev") { 
-     def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
-     stage('Checkout') 
-     {
-        try {
-           myRepo = checkout scm
-           gitCommit = myRepo.GIT_COMMIT
-           gitBranch = myRepo.GIT_BRANCH
-           shortGitCommit = "${gitCommit[0..10]}"
-           previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
-        }
-        catch(Exception e) {
-           println "ERROR => Code Checkout failed, exiting..."
-           throw e
-        }
-     }
-	 
-	 stage('Build') {
-      try
-  	    {
-	      container('maven')
+  pipeline {
+    agent
+	{
+	  label 'maven'
+	}
+	stages
+	{
+	  stage ('Main Stage')
+	  {
+	    steps 
+		{
+		  script
 		  {
+			if (env.SELECT_ENV == "Dev") 
+			{ 
+			def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+			stage('Checkout') 
+			{
+			try {
+				myRepo = checkout scm
+				gitCommit = myRepo.GIT_COMMIT
+				gitBranch = myRepo.GIT_BRANCH
+				shortGitCommit = "${gitCommit[0..10]}"
+				previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+				}
+			catch(Exception e)
+			{
+			println "ERROR => Code Checkout failed, exiting..."
+			throw e
+			}
+			}
+			stage('Build')
+			{
+			try
+			{
+			steps
+			{
 			sh """
 			mvn clean install -Dmaven.test.skip=true
 			"""
-		  }
-        }
-      catch (Exception e) {
-        println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
-        throw e
-      }
-    }
-	
-	stage('Unit Test') {
-      try 
-	    {
-	      container('maven')
-		  {		
-	  		sh """
-			mvn test -Dmaven.test.skip=true
-			"""
-		  }
-        }
-        
-      catch (Exception e) {
-        println "Failed to test - ${currentBuild.fullDisplayName}"
-        throw e
-      }
-    }
-	
-	stage('Sonar Analysis') {
-      try {
-	      container('maven')
-		  {	  
-           withSonarQubeEnv('sonarqube_7_5') {
-           sh """ 
-		   mvn -DBranch=${gitBranch} -Dsonar.branch=${gitBranch} -e -B sonar:sonar
-		   sh """
-		  }
-        }
-      }
-      catch (Exception e) {
-        println "Failed to Sonar - ${currentBuild.fullDisplayName}"
-        throw e
-      }
-    }
-	
-	stage('Quality Gate') {
-      try {
-	      container('maven')
-		  {	  
-          withSonarQubeEnv('sonarqube_7_5') {
-          timeout(time: 1, unit: 'HOURS') {
-              def qg = waitForQualityGate()
-              if (qg.status != 'OK' && qg.status != 'WARN') {
-                error "Pipeline aborted due to quality gate failure: ${qg.status}"
-              }
-             }
-          }
-		  }
-      }
-      catch (Exception e) {
-        println "Failed to Sonar QG - ${currentBuild.fullDisplayName}"
-        throw e
-      }
-    }
-   stage('Build Docker Image') {
-      try {
-	      container('docker')
-		  {	  
-          withCredentials([[$class: 'UsernamePasswordMultiBinding',
-          credentialsId: 'quay-creds',
-          usernameVariable: 'QUAY_USER',
-          passwordVariable: 'QUAY_PASSWORD']]) {
-          sh """
-            docker build -t sureshchandrarhca15/mytomcat:${gitCommit} --build-arg VERSION="0.0.5-${BUILD_NUMBER}" .
-            docker images
-	      """
-	      }
-		 }
-      }
-      catch (Exception e) {
-        println "Failed to Build Docker Image - ${currentBuild.fullDisplayName}"
-        throw e
-      }
-    }
+		    }
+            }
+			catch (Exception e) {
+			println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
+			throw e
+			}
+			}
+			}
+			else {
+			echo "You have selected ${SELECT_ENV} Environment"
+			}
+		}
 	}
-	else {
-	echo "You have selected ${SELECT_ENV} Environment"
-         }
+	}
+	}
 }
+			
