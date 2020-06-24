@@ -1,17 +1,10 @@
-def label = "worker-${UUID.randomUUID().toString()}"
-
 properties([
   parameters([
     choice(choices: ['Dev', 'Stage', 'Prod'], description: 'Please select target Environment ', name: 'SELECT_ENV')
 			])
 	])
 
-podTemplate(label: label, containers: [
-  containerTemplate(name: 'maven'),
-  containerTemplate(name: 'docker'),
-])
-
-  node('label') {
+  node {
 	 if (env.SELECT_ENV == "Dev") { 
      def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
      stage('Checkout') 
