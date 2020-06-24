@@ -113,7 +113,7 @@ pipeline {
 	}
 	stage('Build Docker Image') 
 	{
-	agent { label 'maven' }
+	agent { label 'docker' }
 	steps
 	{
 	script
