@@ -16,7 +16,7 @@ properties([
 			])
 	])
 
-  node(label) {
+  node('label') {
 	 if (env.SELECT_ENV == "Dev") { 
      def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
      stage('Checkout') 
