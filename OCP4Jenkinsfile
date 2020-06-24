@@ -1,10 +1,11 @@
+def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
 pipeline {
   agent { label 'maven' }
   stages
   {
 	stage('Checkout') 
 	{
-	def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+	
 	try
 	{
 		myRepo = checkout scm
