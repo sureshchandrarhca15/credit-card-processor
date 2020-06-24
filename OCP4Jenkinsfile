@@ -9,7 +9,7 @@ properties([
 podTemplate(label: label, containers: [
   containerTemplate(name: 'maven'),
   containerTemplate(name: 'docker'),
-],
+])
 
   node('label') {
 	 if (env.SELECT_ENV == "Dev") { 
