@@ -53,7 +53,8 @@ properties([
 			mvn test -Dmaven.test.skip=true
 			"""
             }
-			catch (Exception e) {
+			catch (Exception e) 
+			{
 			println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
 			throw e
 			}
@@ -67,10 +68,11 @@ properties([
 		    mvn -DBranch=${gitBranch} -Dsonar.branch=${gitBranch} -e -B sonar:sonar
 		    sh """
             }
-			catch (Exception e) {
+			}
+			catch (Exception e) 
+			{
 			println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
 			throw e
-			}
 			}
 			}
 			stage('Quality Gate')
@@ -85,10 +87,11 @@ properties([
               }
              }
              }
-	        catch (Exception e) {
+			 }
+	        catch (Exception e)
+			{
 			println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
 			throw e
-			}
 			}
 			}
 			stage('Build Docker Image') 
@@ -106,10 +109,11 @@ properties([
             docker images
 			"""
 			}
-			catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 			println "Failed to test - ${currentBuild.fullDisplayName}"
 			throw e
-			}
 			}
 			}
 			}
