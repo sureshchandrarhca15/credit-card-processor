@@ -1,4 +1,8 @@
 node {
+  agent 
+  {
+    label 'maven'
+  }
      def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
      stage('Checkout') 
      {
@@ -20,13 +24,11 @@ node {
 	 {
         try 
 		{
-		    container('maven')
-			{
-            sh """
+	        sh """
             mvn clean install -Dmaven.test.skip=true
             """
-            }
-      }
+           
+        }
       catch (Exception e) 
 	  {
         println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
