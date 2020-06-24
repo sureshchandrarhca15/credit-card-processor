@@ -1,25 +1,36 @@
-def version, mvnCmd = "mvn -s templates/cicd-settings-nexus3.xml"
-
-pipeline 
-{
-  agent
-  {
-   label 'maven'
-  }
-
-  stages 
-  {
-   stage('Build App') 
-   {
-     steps
+node {
+     def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+     stage('Checkout') 
      {
-       git branch: 'openshift-aws', url: 'https://github.com/sureshchandrarhca15/credit-card-processor.git'
-       script {
-       def pom = readMavenPom file: 'pom.xml'
-       version = pom.version
-              }
-       sh "mvn install -DskipTests=true"
+        try 
+		{
+            myRepo = checkout scm
+            gitCommit = myRepo.GIT_COMMIT
+            gitBranch = myRepo.GIT_BRANCH
+            shortGitCommit = "${gitCommit[0..10]}"
+            previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+        }
+        catch(Exception e) 
+		{
+            println "ERROR => Code Checkout failed, exiting..."
+            throw e
+        }
      }
-   }
-}
+     stage('Build') 
+	 {
+        try 
+		{
+		    container('maven')
+			{
+            sh """
+            mvn clean install -Dmaven.test.skip=true
+            """
+            }
+      }
+      catch (Exception e) 
+	  {
+        println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
+        throw e
+      }
+    }
 }
