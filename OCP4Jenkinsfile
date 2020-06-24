@@ -1,20 +1,6 @@
-def version, mvnCmd = "mvn -s templates/cicd-settings-nexus3.xml"
-pipeline
-{
-  agent
-  {
-    label 'maven'
-  }
-
-    stages
-    {
-      stage('Build App')
-      {
-        steps
-        {
-checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/sureshchandrarhca15/credit-card-processor.git']]])            
-		             sh "mvn install -DskipTests=true"
-            }
-      }
-	}
+node ('maven') {
+    stage('Checkout Code') {
+                git branch: 'master',
+                url: 'https://github.com/sureshchandrarhca15/credit-card-processor.git'
+    }
 }
