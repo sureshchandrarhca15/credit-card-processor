@@ -1,9 +1,11 @@
-def label = "worker-${UUID.randomUUID().toString()}"
-
-node(label) {
-  def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
-  stage('Checkout') 
-  {
+pipeline {
+  agent {
+         label 'maven'
+        }
+  stages {
+    stage('Checkout') 
+    def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+    {
     try {
            myRepo = checkout scm
            gitCommit = myRepo.GIT_COMMIT
