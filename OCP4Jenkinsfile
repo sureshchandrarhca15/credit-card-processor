@@ -1,0 +1,36 @@
+node {
+     def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+     stage('Checkout') 
+     {
+        try 
+		{
+            myRepo = checkout scm
+            gitCommit = myRepo.GIT_COMMIT
+            gitBranch = myRepo.GIT_BRANCH
+            shortGitCommit = "${gitCommit[0..10]}"
+            previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+        }
+        catch(Exception e) 
+		{
+            println "ERROR => Code Checkout failed, exiting..."
+            throw e
+        }
+     }
+     stage('Build') 
+	 {
+        try 
+		{
+		    container('maven')
+			{
+            sh """
+            mvn clean install -Dmaven.test.skip=true
+            """
+            }
+      }
+      catch (Exception e) 
+	  {
+        println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
+        throw e
+      }
+    }
+}
