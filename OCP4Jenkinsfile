@@ -1,4 +1,21 @@
 node {
+     def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+     stage('Checkout') 
+     {
+        try 
+		{
+            myRepo = checkout scm
+            gitCommit = myRepo.GIT_COMMIT
+            gitBranch = myRepo.GIT_BRANCH
+            shortGitCommit = "${gitCommit[0..10]}"
+            previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+        }
+        catch(Exception e) 
+		{
+            println "ERROR => Code Checkout failed, exiting..."
+            throw e
+        }
+     }
      stage('Build') 
 	 {
         try 
