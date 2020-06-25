@@ -111,7 +111,28 @@ pipeline {
 	}
 	}
 	}
-	
+	stage('Build Image')
+	{
+	steps
+	{
+	script
+	{	
+	try
+	{
+		openshift.withCluster() 
+		{
+		openshift.selector("bc", "tasks").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait=true")
+		}
+		
+	}
+	catch (Exception e)
+	{
+		println "Failed to Build Image  - ${currentBuild.fullDisplayName}"
+		throw e
+	}
+	}
+	}
+	}
 
 }
 }
