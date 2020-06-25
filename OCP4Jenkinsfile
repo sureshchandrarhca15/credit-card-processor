@@ -115,14 +115,14 @@ pipeline {
       when {
         expression {
           openshift.withCluster() {
-            return !openshift.selector("bc", "mapit").exists();
+            return !openshift.selector("bc", "ccapp").exists();
           }
         }
       }
       steps {
         script {
           openshift.withCluster() {
-            openshift.newBuild("--name=mapit", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
+            openshift.newBuild("--name=ccapp", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
           }
         }
       }
@@ -131,7 +131,7 @@ pipeline {
       steps {
         script {
           openshift.withCluster() {
-            openshift.selector("bc", "mapit").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait")
+            openshift.selector("bc", "ccapp").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait")
           }
         }
       }
