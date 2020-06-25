@@ -121,7 +121,7 @@ pipeline {
 	{
 		openshift.withCluster() 
 		{
-		openshift.selector("bc", "tasks").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait=true")
+		openshift.selector("bc", "testapp2").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait=true")
 		}
 		
 	}
