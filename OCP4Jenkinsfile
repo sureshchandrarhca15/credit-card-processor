@@ -111,34 +111,7 @@ pipeline {
 	}
 	}
 	}
-	stage('Build Docker Image') 
-	{
-	agent { label 'docker' }
-	steps
-	{
-	script
-	{	
-	try 
-	{
-		withCredentials([[$class: 'UsernamePasswordMultiBinding',
-		credentialsId: 'quay-creds',
-		usernameVariable: 'QUAY_USER',
-		passwordVariable: 'QUAY_PASSWORD']]) 
-		{
-		sh """
-        docker build -t sureshchandrarhca15/mytomcat:${gitCommit} --build-arg VERSION="0.0.5-${BUILD_NUMBER}" .
-        docker images
-		"""
-		}
-	}
-	catch (Exception e)
-	{
-		println "Failed to Build Docker Image - ${currentBuild.fullDisplayName}"
-		throw e
-	}
-	}
-	}
-	}
+	
 
 }
 }
