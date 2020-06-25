@@ -111,28 +111,31 @@ pipeline {
 	}
 	}
 	}
-	stage('Build Image')
-	{
-	steps
-	{
-	script
-	{	
-	try
-	{
-		openshift.withCluster() 
-		{
-		openshift.selector("bc", "testapp2").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait=true")
-		}
-		
-	}
-	catch (Exception e)
-	{
-		println "Failed to Build Image  - ${currentBuild.fullDisplayName}"
-		throw e
-	}
-	}
-	}
-	}
+	stage('Create Image Builder') {
+      when {
+        expression {
+          openshift.withCluster() {
+            return !openshift.selector("bc", "mapit").exists();
+          }
+        }
+      }
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.newBuild("--name=mapit", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
+          }
+        }
+      }
+    }
+    stage('Build Image') {
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.selector("bc", "mapit").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait")
+          }
+        }
+      }
+    }
 
 }
 }
