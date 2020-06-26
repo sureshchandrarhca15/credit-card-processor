@@ -1,4 +1,10 @@
 def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+def QUAY_API_TOKEN="l7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ"
+def QUAY_URL="https://quay.apps.cluster-121b.sandbox1172.opentlc.com"
+def QUAY_REPO_NAME="quay/ccapp"
+def VULNERABILITY_OUTPUT_FILE="/tmp/image-vulnerability.txt"
+def IMAGE_ID_OUTPUT_FILE="/tmp/image_id.txt"
+
 pipeline {
   agent { label 'maven' }
   stages
@@ -149,30 +155,16 @@ pipeline {
       }
     }
 	stage('Vulnerability Scan') {
-	agent { label 'skopeo' }
+	agent { label 'scan' }
       steps {
         script {
           openshift.withCluster() {
-        sh """
-			echo -e "==> Get Image ID from Quay Enterprise for vulnerabilities scan ,Please wait..."
-			curl -k -H 'Authorization: Bearer l7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ'  'https://quay.apps.cluster-121b.sandbox1172.opentlc.com/api/v1/repository/quay/ccapp/image/' |jq -r '.images[].id' > /tmp/image_id.txt
-			echo -e "==> This Image has So many Layers, See the below output"
-			cat /tmp/image_id.txt
-			echo -e "==> Scanning each layer for Critical Vulnerabilities, Please wait..."
-			for A in "\$(cat /tmp/image_id.txt)"
-				do
-					echo -e "==> Scanning $A Layer, Please wait..."
-					curl -k -H 'Authorization: Bearer 7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ' ' https://quay.apps.cluster-121b.sandbox1172.opentlc.com/api/v1/repository/quay/ccapp/image/\${A}/security?vulnerabilities=true' |jq -r '.data.Layer.Features[].Vulnerabilities[] | .Name + " " + .NamespaceName + " " + .Severity' > /tmp/image-vulnerability.txt
-				CRITICAL=\$(cat /tmp/image-vulnerability.txt | grep Critical | wc -l)
-				if [ $CRITICAL -ne 0 ]; then
-					echo -e "==> There are $CRITICAL Critical Vulnerabilities found in this Layer, Exiting from Pipeline..."
-					exit 1
-				else
-					echo -e "==> No Critical Vulnerabilities found in this Layer"
-				fi
-			done
-		sh """
-
+			sh " export ${QUAY_API_TOKEN}"
+			sh " export ${QUAY_URL}"
+			sh " export ${QUAY_REPO_NAME}"
+			sh " export ${VULNERABILITY_OUTPUT_FILE}"
+			sh " export ${IMAGE_ID_OUTPUT_FILE}"
+			sh "/vulnerability_scan.sh"
           }
         }
       }
