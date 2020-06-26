@@ -1,4 +1,10 @@
 def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+def QUAY_API_TOKEN = "l7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ"
+def QUAY_URL = "https://quay.apps.cluster-121b.sandbox1172.opentlc.com"
+def QUAY_REPO_NAME = "quay/ccapp"
+def VULNERABILITY_OUTPUT_FILE = "/tmp/image-vulnerability.txt"
+def IMAGE_ID_OUTPUT_FILE = "/tmp/image_id.txt"
+
 pipeline {
   agent { label 'maven' }
   stages
@@ -141,7 +147,24 @@ pipeline {
       steps {
         script {
           openshift.withCluster() {
-            sh "/usr/bin/skopeo copy docker://image-registry.openshift-image-registry.svc:5000/cicd/ccapp:latest docker://quay.apps.cluster-121b.sandbox1172.opentlc.com/quay/ccapp:latest --src-creds=kubeadmin:OVdMhKwaA1_QWJ7vkaiClCcKMQPof55QFTp-Znjm73c  --dest-creds=quay:password --src-tls-verify=false --dest-tls-verify=false"
+		    sh """
+            /usr/bin/skopeo copy docker://image-registry.openshift-image-registry.svc:5000/cicd/ccapp:latest docker://quay.apps.cluster-121b.sandbox1172.opentlc.com/quay/ccapp:latest --src-creds=kubeadmin:FCMpV76H6uJSFbd02M6JceUHbARWyLqIg7oVebcKCv0 --dest-creds=quay:password --src-tls-verify=false --dest-tls-verify=false
+			sh """
+          }
+        }
+      }
+    }
+	stage('Vulnerability Scan') {
+	agent { label 'scan' }
+      steps {
+        script {
+          openshift.withCluster() {
+			sh " export ${QUAY_API_TOKEN}"
+			sh " export ${QUAY_URL}"
+			sh " export ${QUAY_REPO_NAME}"
+			sh " export ${VULNERABILITY_OUTPUT_FILE}"
+			sh " export ${IMAGE_ID_OUTPUT_FILE}"
+			sh "/vulnerability_scan.sh"
           }
         }
       }
