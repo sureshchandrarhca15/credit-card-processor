@@ -31,154 +31,23 @@ pipeline {
 	}
 	}
 	}
-	stage('Build')
-	{
-	steps
-	{
-	script
-	{
-	try
-	{
-		sh """
-		mvn clean install -Dmaven.test.skip=true
-		"""
-    }
-	catch (Exception e) {
-		println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
-		throw e
-	}
-	}
-	}
-	}
-	stage('Unit Test')
-	{
-	steps
-	{
-	script
-	{	
-	try
-	{
-		sh """
-		mvn test -Dmaven.test.skip=true
-		"""
-    }
-	catch (Exception e) 
-	{
-		println "Failed to Run Unit Test - ${currentBuild.fullDisplayName}"
-		throw e
-	}
-	}
-	}
-	}
-	stage('Sonar Analysis')
-	{
-	steps
-	{
-	script
-	{	
-	try
-	{
-		withSonarQubeEnv('sonarqube_7_5') {
-        sh """ 
-	    mvn -DBranch=${gitBranch} -Dsonar.branch=${gitBranch} -e -B sonar:sonar
-	    sh """
-        }
-	}
-	catch (Exception e) 
-	{
-		println "Failed to Run Sonar Analysis - ${currentBuild.fullDisplayName}"
-		throw e
-	}
-	}
-	}
-	}
-	stage('Quality Gate')
-	{
-	steps
-	{
-	script
-	{	
-	try
-	{
-		withSonarQubeEnv('sonarqube_7_5') {
-        timeout(time: 1, unit: 'HOURS') {
-        def qg = waitForQualityGate()
-        if (qg.status != 'OK' && qg.status != 'WARN') {
-            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-        }
-        }
-        }
-	}
-	catch (Exception e)
-	{
-		println "Failed to Test Quality Gate  - ${currentBuild.fullDisplayName}"
-		throw e
-	}
-	}
-	}
-	}
-	stage('Create Image Builder') {
-      when {
-        expression {
-          openshift.withCluster() {
-            return !openshift.selector("bc", "ccapp").exists();
-          }
-        }
-      }
-      steps {
-        script {
-          openshift.withCluster() {
-            openshift.newBuild("--name=ccapp", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
-          }
-        }
-      }
-    }
-    stage('Build Image') {
-      steps {
-        script {
-          openshift.withCluster() {
-            openshift.selector("bc", "ccapp").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait")
-          }
-        }
-      }
-    }
-	stage('Push Image to Quay') {
-	agent { label 'skopeo' }
-      steps {
-        script {
-          openshift.withCluster() {
-		    sh """
-            /usr/bin/skopeo copy docker://image-registry.openshift-image-registry.svc:5000/cicd/ccapp:latest docker://quay.apps.cluster-121b.sandbox1172.opentlc.com/quay/ccapp:latest --src-creds=kubeadmin:FCMpV76H6uJSFbd02M6JceUHbARWyLqIg7oVebcKCv0 --dest-creds=quay:password --src-tls-verify=false --dest-tls-verify=false
-			sh """
-          }
-        }
-      }
-    }
+	
 	stage('Vulnerability Scan') {
 	agent { label 'scan' }
       steps {
         script {
           openshift.withCluster() {
-			sh " export ${QUAY_API_TOKEN}"
-			sh " export ${QUAY_URL}"
-			sh " export ${QUAY_REPO_NAME}"
-			sh " export ${VULNERABILITY_OUTPUT_FILE}"
-			sh " export ${IMAGE_ID_OUTPUT_FILE}"
+			sh " echo  ${QUAY_API_TOKEN}"
+			sh " echo  ${QUAY_URL}"
+			sh " echo  ${QUAY_REPO_NAME}"
+			sh " echo  ${VULNERABILITY_OUTPUT_FILE}"
+			sh " echo  ${IMAGE_ID_OUTPUT_FILE}"
 			sh "/vulnerability_scan.sh"
           }
         }
       }
     }
-    stage('Vulnerability Scan') {
-	agent { label 'skopeo' }
-      steps {
-        script {
-          openshift.withCluster() {
-            sh "/usr/bin/skopeo copy docker://image-registry.openshift-image-registry.svc:5000/cicd/ccapp:latest docker://quay.apps.cluster-121b.sandbox1172.opentlc.com/quay/ccapp:latest --src-creds=kubeadmin:OVdMhKwaA1_QWJ7vkaiClCcKMQPof55QFTp-Znjm73c  --dest-creds=quay:password --src-tls-verify=false --dest-tls-verify=false"
-          }
-        }
-      }
-    }
+    
 
 }
 }
