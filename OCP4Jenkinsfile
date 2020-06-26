@@ -164,7 +164,7 @@ pipeline {
 				do
 					echo -e "==> Scanning $A Layer, Please wait..."
 					curl -k -H "Authorization: Bearer \${QUAY_API_TOKEN}" \${QUAY_URL}/api/v1/repository/quay/ccapp/image/\${A}/security?vulnerabilities=true |jq -r '.data.Layer.Features[].Vulnerabilities[] | .Name + " " + .NamespaceName + " " + .Severity' > /tmp/image-vulnerability.txt
-				CRITICAL=$(cat /tmp/image-vulnerability.txt | grep Critical | wc -l)
+				CRITICAL=\$(cat /tmp/image-vulnerability.txt | grep Critical | wc -l)
 				if [ $CRITICAL -ne 0 ]; then
 					echo -e "==> There are $CRITICAL Critical Vulnerabilities found in this Layer, Exiting from Pipeline..."
 					exit 1
