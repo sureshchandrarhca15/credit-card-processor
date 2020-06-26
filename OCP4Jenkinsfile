@@ -167,7 +167,7 @@ pipeline {
 			echo ""
 			echo -e "==> Scanning each layer for Critical Vulnerabilities, Please wait..."
 			echo ""
-			for A in "$(cat ${IMAGE_ID_OUTPUT_FILE})"
+			for A in $(cat $IMAGE_ID_OUTPUT_FILE)
 			do
 			echo ""
 			echo -e "==> Scanning $A Layer, Please wait..."
