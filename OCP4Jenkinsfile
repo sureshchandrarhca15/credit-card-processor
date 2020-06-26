@@ -1,5 +1,5 @@
 def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
-def QUAY_API_TOKEN = "l7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ"
+def QUAY_API_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 def QUAY_URL = "https://quay.apps.cluster-121b.sandbox1172.opentlc.com"
 def QUAY_REPO_NAME = "quay/ccapp"
 def VULNERABILITY_OUTPUT_FILE = "/tmp/image-vulnerability.txt"
@@ -31,7 +31,129 @@ pipeline {
 	}
 	}
 	}
-	
+	stage('Build')
+	{
+	steps
+	{
+	script
+	{
+	try
+	{
+		sh """
+		mvn clean install -Dmaven.test.skip=true
+		"""
+    }
+	catch (Exception e) {
+		println "Failed to Maven Build - ${currentBuild.fullDisplayName}"
+		throw e
+	}
+	}
+	}
+	}
+	stage('Unit Test')
+	{
+	steps
+	{
+	script
+	{	
+	try
+	{
+		sh """
+		mvn test -Dmaven.test.skip=true
+		"""
+    }
+	catch (Exception e) 
+	{
+		println "Failed to Run Unit Test - ${currentBuild.fullDisplayName}"
+		throw e
+	}
+	}
+	}
+	}
+	stage('Sonar Analysis')
+	{
+	steps
+	{
+	script
+	{	
+	try
+	{
+		withSonarQubeEnv('sonarqube_7_5') {
+        sh """ 
+	    mvn -DBranch=${gitBranch} -Dsonar.branch=${gitBranch} -e -B sonar:sonar
+	    sh """
+        }
+	}
+	catch (Exception e) 
+	{
+		println "Failed to Run Sonar Analysis - ${currentBuild.fullDisplayName}"
+		throw e
+	}
+	}
+	}
+	}
+	stage('Quality Gate')
+	{
+	steps
+	{
+	script
+	{	
+	try
+	{
+		withSonarQubeEnv('sonarqube_7_5') {
+        timeout(time: 1, unit: 'HOURS') {
+        def qg = waitForQualityGate()
+        if (qg.status != 'OK' && qg.status != 'WARN') {
+            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+        }
+        }
+        }
+	}
+	catch (Exception e)
+	{
+		println "Failed to Test Quality Gate  - ${currentBuild.fullDisplayName}"
+		throw e
+	}
+	}
+	}
+	}
+	stage('Create Image Builder') {
+      when {
+        expression {
+          openshift.withCluster() {
+            return !openshift.selector("bc", "ccapp").exists();
+          }
+        }
+      }
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.newBuild("--name=ccapp", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
+          }
+        }
+      }
+    }
+    stage('Build Image') {
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.selector("bc", "ccapp").startBuild("--from-file=target/Credit-Card-Processor-0.0.1-SNAPSHOT.jar", "--wait")
+          }
+        }
+      }
+    }
+	stage('Push Image to Quay') {
+	agent { label 'skopeo' }
+      steps {
+        script {
+          openshift.withCluster() {
+		    sh """
+            /usr/bin/skopeo copy docker://image-registry.openshift-image-registry.svc:5000/cicd/ccapp:latest docker://quay.apps.cluster-121b.sandbox1172.opentlc.com/quay/ccapp:latest --src-creds=kubeadmin:xxxxxxxxx --dest-creds=quay:xxxxxxx --src-tls-verify=false --dest-tls-verify=false
+			sh """
+          }
+        }
+      }
+    }
 	stage('Vulnerability Scan') {
 	agent { label 'scan' }
 	  environment 
