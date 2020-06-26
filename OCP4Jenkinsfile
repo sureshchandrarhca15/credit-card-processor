@@ -43,7 +43,7 @@ pipeline {
 			sh " VULNERABILITY_OUTPUT_FILE=${VULNERABILITY_OUTPUT_FILE}"
 			sh " IMAGE_ID_OUTPUT_FILE=${IMAGE_ID_OUTPUT_FILE}"
 
-			sh "/vulnerability_scan.sh -e ${QUAY_API_TOKEN} -e ${QUAY_URL} -e ${QUAY_REPO_NAME} -e ${VULNERABILITY_OUTPUT_FILE} -e ${IMAGE_ID_OUTPUT_FILE}"
+			sh "/vulnerability_scan.sh -e QUAY_API_TOKEN -e QUAY_URL -e QUAY_REPO_NAME -e VULNERABILITY_OUTPUT_FILE -e IMAGE_ID_OUTPUT_FILE"
           }
         }
       }
