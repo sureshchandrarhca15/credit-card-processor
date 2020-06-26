@@ -141,7 +141,7 @@ pipeline {
       steps {
         script {
           openshift.withCluster() {
-            sh "/usr/bin/skopeo copy docker://image-registry.openshift-image-registry.svc:5000/cicd/ccapp:latest docker://quay.apps.cluster-121b.sandbox1172.opentlc.com/quay/ccapp:latest --src-creds=kubeadmin:OVdMhKwaA1_QWJ7vkaiClCcKMQPof55QFTp-Znjm73c  --dest-creds=quay:password --src-tls-verify=false --dest-tls-verify=false"
+            sh "/usr/bin/skopeo copy docker://image-registry.openshift-image-registry.svc:5000/cicd/ccapp:latest \ docker://quay.apps.cluster-121b.sandbox1172.opentlc.com/quay/ccapp:latest \ --src-creds=kubeadmin:OVdMhKwaA1_QWJ7vkaiClCcKMQPof55QFTp-Znjm73c --dest-creds=quay:password --src-tls-verify=false \ --dest-tls-verify=false"
           }
         }
       }
