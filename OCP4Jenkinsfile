@@ -1,4 +1,9 @@
 def myRepo, gitCommit, gitBranch, shortGitCommit, previousGitCommit
+def QUAY_API_TOKEN="l7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ"
+def QUAY_URL="https://quay.apps.cluster-121b.sandbox1172.opentlc.com"
+def QUAY_REPO_NAME="quay/ccapp"
+def VULNERABILITY_OUTPUT_FILE="/tmp/image-vulnerability.txt"
+def IMAGE_ID_OUTPUT_FILE="/tmp/image_id.txt"
 
 pipeline {
   agent { label 'maven' }
