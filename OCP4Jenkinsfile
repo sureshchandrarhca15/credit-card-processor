@@ -154,18 +154,15 @@ pipeline {
         script {
           openshift.withCluster() {
         sh """
-			QUAY_API_TOKEN="l7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ"
-			QUAY_URL="https://quay.apps.cluster-121b.sandbox1172.opentlc.com"
-			QUAY_REPO_NAME="quay/ccapp"
 			echo -e "==> Get Image ID from Quay Enterprise for vulnerabilities scan ,Please wait..."
-			curl -k -H "Authorization: Bearer ${QUAY_API_TOKEN}" ${QUAY_URL}/api/v1/repository/${QUAY_REPO_NAME}/image/ |jq -r '.images[].id' > /tmp/image_id.txt
+			curl -k -H 'Authorization: Bearer l7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ'  'https://quay.apps.cluster-121b.sandbox1172.opentlc.com/api/v1/repository/quay/ccapp/image/' |jq -r '.images[].id' > /tmp/image_id.txt
 			echo -e "==> This Image has So many Layers, See the below output"
 			cat /tmp/image_id.txt
 			echo -e "==> Scanning each layer for Critical Vulnerabilities, Please wait..."
 			for A in "\$(cat /tmp/image_id.txt)"
 				do
 					echo -e "==> Scanning $A Layer, Please wait..."
-					curl -k -H "Authorization: Bearer \${QUAY_API_TOKEN}" \${QUAY_URL}/api/v1/repository/quay/ccapp/image/\${A}/security?vulnerabilities=true |jq -r '.data.Layer.Features[].Vulnerabilities[] | .Name + " " + .NamespaceName + " " + .Severity' > /tmp/image-vulnerability.txt
+					curl -k -H 'Authorization: Bearer 7ipk8MHo09QutMyX59zth7rghi8PHDWYNIwN6PZ' ' https://quay.apps.cluster-121b.sandbox1172.opentlc.com/api/v1/repository/quay/ccapp/image/\${A}/security?vulnerabilities=true' |jq -r '.data.Layer.Features[].Vulnerabilities[] | .Name + " " + .NamespaceName + " " + .Severity' > /tmp/image-vulnerability.txt
 				CRITICAL=\$(cat /tmp/image-vulnerability.txt | grep Critical | wc -l)
 				if [ $CRITICAL -ne 0 ]; then
 					echo -e "==> There are $CRITICAL Critical Vulnerabilities found in this Layer, Exiting from Pipeline..."
