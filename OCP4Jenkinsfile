@@ -37,11 +37,12 @@ pipeline {
       steps {
         script {
           openshift.withCluster() {
-			sh " echo  ${QUAY_API_TOKEN}"
-			sh " echo  ${QUAY_URL}"
-			sh " echo  ${QUAY_REPO_NAME}"
-			sh " echo  ${VULNERABILITY_OUTPUT_FILE}"
-			sh " echo  ${IMAGE_ID_OUTPUT_FILE}"
+			sh " QUAY_API_TOKEN=${QUAY_API_TOKEN}"
+			sh " QUAY_URL=${QUAY_URL}"
+			sh " QUAY_REPO_NAME=${QUAY_REPO_NAME}"
+			sh " VULNERABILITY_OUTPUT_FILE=${VULNERABILITY_OUTPUT_FILE}"
+			sh " IMAGE_ID_OUTPUT_FILE=${IMAGE_ID_OUTPUT_FILE}"
+
 			sh "/vulnerability_scan.sh"
           }
         }
