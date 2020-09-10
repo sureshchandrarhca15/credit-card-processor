@@ -49,3 +49,5 @@ fi
 
 mv ./target/*.jar /tomcat/webapps/
 mvn clean
+echo "---> Delete .m2"
+rm -rf .m2 
