@@ -47,8 +47,7 @@ else
     mvn -Dmaven.test.skip=true package
 fi
 
-echo "---> Copy *.jar in /tmp/ directory"
-#cp ./target/*.jar /tmp/
+echo "---> Copy Artifects..."
 mv ./target/*.jar /usr/local/tomcat/webapps/
 mvn clean
 echo "---> Delete .m2"
