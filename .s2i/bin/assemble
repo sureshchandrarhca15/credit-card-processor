@@ -47,7 +47,7 @@ else
     mvn -Dmaven.test.skip=true package
 fi
 
-mv ./target/*.jar /tomcat/webapps/
+mv ./target/*.jar /usr/local/tomcat/webapps/
 mvn clean
 echo "---> Delete .m2"
-rm -rf .m2 
+rm -rf .m2  
